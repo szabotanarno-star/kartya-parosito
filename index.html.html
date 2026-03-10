@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kártyapárosító Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Sans 3',sans-serif;background:linear-gradient(160deg,#0f1829 0%,#1a2340 50%,#1e2a4a 100%);min-height:100vh;color:#f5efe0;}
+.screen{display:none;min-height:100vh;padding:2rem 1.5rem 4rem;animation:fadeIn .5s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.hdr{text-align:center;margin-bottom:2rem;}
+.hdr-sub{color:#c9933a;font-size:.75rem;letter-spacing:.4em;text-transform:uppercase;opacity:.7;margin-bottom:.4rem;}
+.hdr h1{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,4vw,2.2rem);color:#f5efe0;font-weight:700;text-shadow:0 2px 20px rgba(201,147,58,.3);}
+.hdr-line{width:70px;height:2px;background:linear-gradient(90deg,transparent,#c9933a,transparent);margin:.8rem auto 0;}
+.btn{background:linear-gradient(135deg,#c9933a,#e8b86d);color:#1a2340;border:none;padding:.75rem 2rem;font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;border-radius:6px;cursor:pointer;box-shadow:0 5px 18px rgba(201,147,58,.35);transition:all .2s;letter-spacing:.02em;}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 26px rgba(201,147,58,.5);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-ghost{background:transparent;border:1px solid rgba(201,147,58,.5);color:#e8b86d;padding:.65rem 1.6rem;font-family:'Playfair Display',serif;font-size:.88rem;border-radius:6px;cursor:pointer;transition:all .2s;}
+.btn-ghost:hover{background:rgba(201,147,58,.1);}
+.btn-danger{background:transparent;border:1px solid rgba(192,57,43,.5);color:#e88;padding:.5rem 1rem;font-size:.8rem;border-radius:5px;cursor:pointer;transition:all .2s;font-family:'Source Sans 3',sans-serif;}
+.btn-danger:hover{background:rgba(192,57,43,.15);}
+.btn-sm{padding:.5rem 1.1rem;font-size:.8rem;}
+.btn-wrap{text-align:center;margin-top:2rem;}
+.btn-row{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;}
+.field-group{margin-bottom:1rem;}
+.field-label{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,239,224,.45);margin-bottom:.3rem;display:block;}
+.field-input,.field-textarea{width:100%;background:rgba(245,239,224,.06);border:1px solid rgba(201,147,58,.25);border-radius:5px;padding:.55rem .8rem;font-family:'Source Sans 3',sans-serif;font-size:.88rem;color:#f5efe0;outline:none;transition:border-color .2s,box-shadow .2s;}
+.field-input::placeholder,.field-textarea::placeholder{color:rgba(245,239,224,.25);}
+.field-input:focus,.field-textarea:focus{border-color:#c9933a;box-shadow:0 0 0 3px rgba(201,147,58,.15);}
+.field-textarea{resize:vertical;min-height:70px;line-height:1.6;}
+.kw-tag{background:linear-gradient(135deg,#1a2340,#2d3a5c);color:#e8b86d;font-size:.63rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:.2rem .52rem;border-radius:3px;border:1px solid rgba(201,147,58,.28);display:inline-block;}
+.kw-strip{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.7rem;padding-top:.7rem;border-top:1px solid rgba(201,147,58,.18);}
+#screen-home{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.home-desc{color:rgba(245,239,224,.55);font-size:.9rem;max-width:420px;line-height:1.7;margin:.8rem auto 2rem;}
+.home-sets{width:100%;max-width:560px;margin:0 auto 2rem;}
+.set-item{background:rgba(245,239,224,.05);border:1px solid rgba(201,147,58,.18);border-radius:10px;padding:1rem 1.4rem;margin-bottom:.8rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .2s;}
+.set-item:hover{background:rgba(201,147,58,.08);border-color:rgba(201,147,58,.4);}
+.set-item-info{text-align:left;}
+.set-item-name{font-family:'Playfair Display',serif;font-size:1rem;color:#f5efe0;font-weight:600;}
+.set-item-meta{font-size:.74rem;color:rgba(245,239,224,.45);margin-top:.2rem;}
+.set-item-arrow{color:#c9933a;font-size:1.2rem;}
+.empty-sets{color:rgba(245,239,224,.35);font-style:italic;font-size:.88rem;padding:2rem;text-align:center;border:1px dashed rgba(245,239,224,.12);border-radius:8px;}
+#screen-admin{max-width:860px;margin:0 auto;}
+.admin-tabs{display:flex;gap:.5rem;margin-bottom:2rem;flex-wrap:wrap;}
+.tab{padding:.5rem 1.2rem;border-radius:50px;font-size:.78rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;border:1px solid rgba(201,147,58,.25);color:rgba(245,239,224,.5);background:transparent;transition:all .2s;font-family:'Source Sans 3',sans-serif;}
+.tab.active{background:#c9933a;color:#1a2340;border-color:#c9933a;box-shadow:0 3px 12px rgba(201,147,58,.35);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.panel{background:rgba(245,239,224,.04);border:1px solid rgba(201,147,58,.12);border-radius:12px;padding:1.6rem;margin-bottom:1.5rem;}
+.panel-title{font-family:'Playfair Display',serif;font-size:1rem;color:#e8b86d;margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.card-list{display:flex;flex-direction:column;gap:.6rem;margin-top:1rem;}
+.card-entry{background:rgba(245,239,224,.05);border:1px solid rgba(201,147,58,.15);border-radius:8px;padding:.8rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;}
+.card-entry-info{flex:1;}
+.card-entry-name{font-size:.88rem;font-weight:600;color:#f5efe0;}
+.card-entry-sub{font-size:.72rem;color:rgba(245,239,224,.4);margin-top:.15rem;}
+.tag-input-wrap{display:flex;gap:.5rem;align-items:center;}
+.tag-list{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem;}
+.tag-pill{background:rgba(201,147,58,.15);border:1px solid rgba(201,147,58,.3);color:#e8b86d;font-size:.72rem;padding:.2rem .55rem;border-radius:50px;display:inline-flex;align-items:center;gap:.3rem;}
+.tag-pill button{background:none;border:none;color:#c9933a;cursor:pointer;font-size:.85rem;line-height:1;padding:0;}
+.alert{padding:.7rem 1rem;border-radius:6px;font-size:.82rem;margin-bottom:1rem;}
+.alert-success{background:rgba(122,158,126,.15);border:1px solid #7a9e7e;color:#a8c5ab;}
+.alert-error{background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.35);color:#e88;}
+.sets-manager{display:flex;flex-direction:column;gap:.8rem;}
+.set-entry{background:rgba(245,239,224,.05);border:1px solid rgba(201,147,58,.15);border-radius:10px;padding:1rem 1.2rem;}
+.set-entry-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.set-entry-title{font-family:'Playfair Display',serif;font-size:.95rem;color:#f5efe0;font-weight:600;}
+.set-entry-meta{font-size:.72rem;color:rgba(245,239,224,.38);margin-top:.2rem;}
+.set-entry-body{margin-top:1rem;display:none;}
+.set-entry-body.open{display:block;}
+.pair-preview{background:rgba(245,239,224,.04);border:1px solid rgba(201,147,58,.1);border-radius:7px;padding:.7rem 1rem;margin-bottom:.6rem;font-size:.82rem;}
+.pair-preview-name{font-weight:600;color:#e8b86d;margin-bottom:.25rem;}
+.pair-preview-phen{color:rgba(245,239,224,.7);margin-bottom:.25rem;}
+.phases{display:flex;justify-content:center;gap:.7rem;margin-bottom:2rem;flex-wrap:wrap;}
+.ph{display:flex;align-items:center;gap:.4rem;padding:.32rem .9rem;border-radius:50px;font-size:.72rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;border:1px solid transparent;transition:all .4s;}
+.ph.active{background:#c9933a;color:#1a2340;box-shadow:0 0 18px rgba(201,147,58,.4);}
+.ph.done{background:rgba(122,158,126,.2);color:#a8c5ab;border-color:#7a9e7e;}
+.ph.upcoming{background:rgba(245,239,224,.05);color:rgba(245,239,224,.3);border-color:rgba(245,239,224,.08);}
+.phn{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;background:rgba(0,0,0,.2);}
+.prog-wrap{max-width:260px;margin:0 auto 2rem;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:.66rem;color:rgba(245,239,224,.38);margin-bottom:.32rem;letter-spacing:.05em;text-transform:uppercase;}
+.prog-bar{height:3px;background:rgba(245,239,224,.07);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#c9933a,#7a9e7e);border-radius:4px;transition:width .4s ease;}
+.instr{background:rgba(201,147,58,.07);border:1px solid rgba(201,147,58,.18);border-radius:8px;padding:.75rem 1.3rem;margin:0 auto 2rem;max-width:620px;text-align:center;color:rgba(245,239,224,.62);font-size:.82rem;line-height:1.6;}
+.instr strong{color:#e8b86d;}
+.grid-p1{display:grid;grid-template-columns:1fr 1fr;gap:1.8rem 2.5rem;max-width:980px;margin:0 auto;}
+.col-lbl{font-family:'Playfair Display',serif;font-style:italic;color:#e8b86d;font-size:.85rem;text-align:center;margin-bottom:1rem;opacity:.6;}
+.cards-col{display:flex;flex-direction:column;gap:.9rem;}
+.sm-card{background:linear-gradient(145deg,#fdf6e8,#ede4cc);border:1.5px solid rgba(201,147,58,.22);border-radius:8px;padding:1.1rem 1.3rem;cursor:grab;transition:all .22s;box-shadow:0 4px 13px rgba(26,35,64,.17),inset 0 1px 0 rgba(255,255,255,.5);user-select:none;position:relative;overflow:hidden;}
+.sm-card::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");pointer-events:none;}
+.sm-card:hover:not(.matched){transform:translateY(-3px) rotate(.5deg);box-shadow:0 9px 26px rgba(26,35,64,.3);border-color:#c9933a;}
+.sm-card.selected{border:2px solid #c9933a;box-shadow:0 0 0 3px rgba(201,147,58,.22),0 9px 26px rgba(26,35,64,.35);transform:translateY(-4px) rotate(1deg);}
+.sm-card.matched{border-color:#7a9e7e;background:linear-gradient(145deg,#eef5ef,#ddeede);cursor:default;opacity:.6;}
+.sm-card.matched:hover{transform:none;box-shadow:0 4px 13px rgba(26,35,64,.17);}
+.sm-card.dragging{opacity:.3;transform:rotate(3deg);}
+.sm-name{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:#1a2340;text-align:center;}
+.sm-div{width:32px;height:1px;background:linear-gradient(90deg,transparent,#c9933a,transparent);margin:.55rem auto;}
+.sm-hint{font-size:.66rem;color:rgba(26,35,64,.38);text-align:center;font-style:italic;}
+.lg-card{background:linear-gradient(160deg,#fdf8ee,#f5efe0);border:1.5px dashed rgba(201,147,58,.32);border-radius:10px;padding:1.2rem 1.5rem 1rem;transition:all .22s;box-shadow:0 4px 17px rgba(26,35,64,.14);min-height:125px;display:flex;flex-direction:column;cursor:pointer;position:relative;overflow:hidden;}
+.lg-card::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='200' filter='url(%23n)' opacity='.033'/%3E%3C/svg%3E");pointer-events:none;}
+.lg-card.matched{border:1.5px solid #7a9e7e;background:linear-gradient(160deg,#f0f8f0,#e8f4e8);cursor:default;}
+.lg-card.drop-hover{border:2px solid #c9933a;box-shadow:0 0 0 4px rgba(201,147,58,.16),0 11px 30px rgba(26,35,64,.35);transform:scale(1.02);}
+.lg-phen{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:#1a2340;line-height:1.3;margin-bottom:.35rem;}
+.lg-hint{flex:1;display:flex;align-items:center;justify-content:center;color:rgba(26,35,64,.26);font-style:italic;font-size:.76rem;padding:.5rem 0;}
+.lg-badge{background:rgba(122,158,126,.14);border:1px solid #7a9e7e;border-radius:4px;padding:.25rem .55rem;font-size:.72rem;color:#7a9e7e;font-weight:600;text-align:center;margin:.3rem 0;}
+.p2-layout{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:1.8rem;}
+.pair-block{display:grid;grid-template-columns:190px 1fr;gap:1.2rem;align-items:start;background:rgba(245,239,224,.04);border:1px solid rgba(201,147,58,.1);border-radius:13px;padding:1.5rem;box-shadow:0 7px 25px rgba(0,0,0,.17);}
+.p2-sm{background:linear-gradient(145deg,#fdf6e8,#ede4cc);border:1px solid rgba(201,147,58,.26);border-radius:8px;padding:1.1rem 1rem;box-shadow:0 4px 13px rgba(26,35,64,.17);position:relative;overflow:hidden;}
+.p2-sm::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");pointer-events:none;}
+.p2-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#1a2340;text-align:center;margin-bottom:.65rem;}
+.p2-div{width:30px;height:1px;background:linear-gradient(90deg,transparent,#c9933a,transparent);margin:0 auto .8rem;}
+.p2-lg{background:linear-gradient(160deg,#fdf8ee,#f5efe0);border:1px solid rgba(201,147,58,.2);border-radius:10px;padding:1.3rem 1.5rem 1rem;box-shadow:0 4px 17px rgba(26,35,64,.13);display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.p2-lg::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='300' filter='url(%23n)' opacity='.033'/%3E%3C/svg%3E");pointer-events:none;}
+.p2-phen-lbl{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:#c9933a;font-weight:600;margin-bottom:.25rem;}
+.p2-phen{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#1a2340;margin-bottom:.75rem;}
+.inp-dark{width:100%;background:rgba(26,35,64,.07);border:1px solid rgba(201,147,58,.26);border-radius:5px;padding:.48rem .7rem;font-family:'Source Sans 3',sans-serif;font-size:.83rem;color:#1a2340;outline:none;transition:border-color .2s,box-shadow .2s;margin-bottom:.65rem;}
+.inp-dark::placeholder{color:rgba(26,35,64,.32);}
+.inp-dark:focus{border-color:#c9933a;box-shadow:0 0 0 3px rgba(201,147,58,.14);}
+.inp-dark.err{border-color:#c0392b;}
+.ta-dark{width:100%;background:rgba(26,35,64,.06);border:1px solid rgba(201,147,58,.26);border-radius:6px;padding:.6rem .8rem;font-family:'Source Sans 3',sans-serif;font-size:.83rem;color:#1a2340;outline:none;resize:vertical;min-height:72px;line-height:1.6;transition:border-color .2s,box-shadow .2s;margin-bottom:.65rem;}
+.ta-dark::placeholder{color:rgba(26,35,64,.3);}
+.ta-dark:focus{border-color:#c9933a;box-shadow:0 0 0 3px rgba(201,147,58,.14);}
+.ta-dark.err{border-color:#c0392b;}
+.lbl-dark{font-size:.64rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(26,35,64,.45);margin-bottom:.26rem;display:block;}
+.p3-layout{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:1.8rem;}
+.p3-block{background:rgba(245,239,224,.04);border:1px solid rgba(201,147,58,.1);border-radius:13px;padding:1.5rem;box-shadow:0 7px 25px rgba(0,0,0,.17);}
+.p3-phen{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#f5efe0;margin-bottom:.3rem;}
+.p3-paired{font-size:.76rem;color:rgba(245,239,224,.4);margin-bottom:1.1rem;}
+.p3-choices{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.8rem;}
+.choice-btn{background:rgba(245,239,224,.07);border:1.5px solid rgba(201,147,58,.25);color:#f5efe0;padding:.55rem 1.1rem;border-radius:6px;cursor:pointer;font-size:.84rem;font-family:'Source Sans 3',sans-serif;transition:all .2s;}
+.choice-btn:hover{background:rgba(201,147,58,.12);border-color:#c9933a;}
+.choice-btn.chosen{background:linear-gradient(135deg,rgba(201,147,58,.25),rgba(232,184,109,.15));border-color:#c9933a;color:#e8b86d;font-weight:600;box-shadow:0 0 0 3px rgba(201,147,58,.15);}
+.p3-chosen-label{font-size:.7rem;color:rgba(245,239,224,.35);font-style:italic;margin-top:.6rem;}
+.success{text-align:center;padding:3.5rem 2rem;}
+.s-icon{font-size:3rem;margin-bottom:.8rem;}
+.s-title{font-family:'Playfair Display',serif;font-size:1.9rem;color:#f5efe0;margin-bottom:.35rem;}
+.s-sub{color:#a8c5ab;font-size:.9rem;margin-bottom:2rem;}
+.s-summary{max-width:820px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.9rem;}
+.s-card{background:rgba(245,239,224,.06);border:1px solid rgba(122,158,126,.25);border-radius:10px;padding:1rem 1.2rem;text-align:left;}
+.s-cname{font-family:'Playfair Display',serif;font-size:.9rem;color:#f5efe0;font-weight:700;margin-bottom:.3rem;}
+.s-cera{font-size:.74rem;color:#e8b86d;margin-bottom:.15rem;}
+.s-cyear{font-size:.74rem;color:#a8c5ab;margin-bottom:.15rem;}
+.s-ckw{font-size:.72rem;color:rgba(245,239,224,.45);margin-top:.3rem;}
+.login-wrap{max-width:360px;margin:0 auto;text-align:center;padding-top:3rem;}
+.login-box{background:rgba(245,239,224,.05);border:1px solid rgba(201,147,58,.2);border-radius:14px;padding:2rem;margin-top:1.5rem;}
+.val-msg{background:rgba(192,57,43,.11);border:1px solid rgba(192,57,43,.32);color:#e88;font-size:.78rem;padding:.5rem 1rem;border-radius:6px;margin-top:.8rem;display:inline-block;}
+.hidden{display:none!important;}
+.back-link{color:rgba(245,239,224,.4);font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem;margin-bottom:1.5rem;transition:color .2s;background:none;border:none;font-family:'Source Sans 3',sans-serif;}
+.back-link:hover{color:#e8b86d;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:#e8b86d;margin-bottom:1rem;}
+.badge{background:rgba(201,147,58,.15);border:1px solid rgba(201,147,58,.3);color:#e8b86d;font-size:.65rem;font-weight:600;padding:.15rem .45rem;border-radius:3px;letter-spacing:.05em;text-transform:uppercase;}
+
+/* loading overlay */
+.loading-overlay{position:fixed;inset:0;background:rgba(15,24,41,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:1rem;}
+.loading-overlay.hidden{display:none!important;}
+.spinner{width:36px;height:36px;border:3px solid rgba(201,147,58,.2);border-top-color:#c9933a;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:rgba(245,239,224,.6);font-size:.85rem;}
+
+@media(max-width:640px){
+  .grid-p1{grid-template-columns:1fr;}
+  .pair-block{grid-template-columns:1fr;}
+  .grid2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Betöltés…</div>
+</div>
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div class="hdr">
+    <div class="hdr-sub">✦ Interaktív tanulás ✦</div>
+    <h1>Kártyapárosító</h1>
+    <div class="hdr-line"></div>
+  </div>
+  <p class="home-desc">Válassz egy kártyaszettet a gyakorláshoz, vagy lépj be adminisztrátorként a szettek kezeléséhez.</p>
+  <div class="home-sets" id="home-sets-list">
+    <div class="empty-sets">Szettek betöltése…</div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-ghost" onclick="showScreen('screen-login')">⚙ Admin belépés</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen">
+  <div class="hdr">
+    <div class="hdr-sub">✦ Adminisztrátor ✦</div>
+    <h1>Belépés</h1>
+    <div class="hdr-line"></div>
+  </div>
+  <div class="login-wrap">
+    <button class="back-link" onclick="showScreen('screen-home')">← Vissza</button>
+    <div class="login-box">
+      <div class="field-group">
+        <label class="field-label">Jelszó</label>
+        <input class="field-input" type="password" id="admin-pw" placeholder="Admin jelszó" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="login-err" class="hidden" style="color:#e88;font-size:.8rem;margin-bottom:.8rem;">Hibás jelszó!</div>
+      <button class="btn" onclick="doLogin()" style="width:100%">Belépés</button>
+      <p style="font-size:.7rem;color:rgba(245,239,224,.3);margin-top:1rem;">Alapértelmezett jelszó: <strong style="color:rgba(245,239,224,.5)">admin123</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="screen-admin" class="screen">
+  <div class="hdr">
+    <div class="hdr-sub">✦ Adminisztrátor ✦</div>
+    <h1>Szerkesztő</h1>
+    <div class="hdr-line"></div>
+  </div>
+  <div style="max-width:860px;margin:0 auto;">
+    <button class="back-link" onclick="showScreen('screen-home');loadSetsFromFirebase()">← Vissza a főoldalra</button>
+    <div id="admin-alert" class="hidden alert"></div>
+    <div class="admin-tabs">
+      <button class="tab active" onclick="switchTab('tab-sets')">📦 Szettkezelő</button>
+      <button class="tab" onclick="switchTab('tab-new')">➕ Új szett</button>
+      <button class="tab" onclick="switchTab('tab-import')">📂 Importálás</button>
+      <button class="tab" onclick="switchTab('tab-password')">🔑 Jelszó</button>
+    </div>
+
+    <!-- SETS -->
+    <div id="tab-sets" class="tab-content active">
+      <div class="panel">
+        <div class="panel-title">📦 Meglévő kártyaszettek</div>
+        <div id="sets-manager" class="sets-manager">
+          <div style="color:rgba(245,239,224,.35);font-style:italic;font-size:.85rem;">Betöltés…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW SET -->
+    <div id="tab-new" class="tab-content">
+      <div class="panel">
+        <div class="panel-title">📝 Szett adatai</div>
+        <div class="field-group">
+          <label class="field-label">Szett neve *</label>
+          <input class="field-input" id="new-set-name" placeholder="pl. Reneszánsz és reformáció">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Leírás (opcionális)</label>
+          <input class="field-input" id="new-set-desc" placeholder="Rövid leírás a szettről">
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">🃏 Kártyapárok hozzáadása</div>
+        <p style="font-size:.8rem;color:rgba(245,239,224,.4);margin-bottom:1.2rem;">Adj hozzá legalább 2 párt.</p>
+        <div class="grid2">
+          <div>
+            <div class="section-title" style="font-size:.88rem;">Névkártya</div>
+            <div class="field-group">
+              <label class="field-label">Személynév *</label>
+              <input class="field-input" id="nc-name" placeholder="pl. Gutenberg">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Korszak (javaslat)</label>
+              <input class="field-input" id="nc-era-hint" placeholder="pl. reneszánsz">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Évszám (javaslat)</label>
+              <input class="field-input" id="nc-year-hint" type="number" placeholder="pl. 1450">
+            </div>
+          </div>
+          <div>
+            <div class="section-title" style="font-size:.88rem;">Jelenségkártya</div>
+            <div class="field-group">
+              <label class="field-label">Jelenség neve *</label>
+              <input class="field-input" id="lc-phenomenon" placeholder="pl. Könyvnyomtatás elterjedése">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Alsó kulcsszavak (min. 2) *</label>
+              <div class="tag-input-wrap">
+                <input class="field-input" id="lc-kw-input" placeholder="Kulcsszó + Enter" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addKw('lc-kws','lc-kw-input');}">
+                <button class="btn btn-sm" onclick="addKw('lc-kws','lc-kw-input')">+</button>
+              </div>
+              <div class="tag-list" id="lc-kws"></div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Felső kulcsszavak (min. 2) *</label>
+              <div class="tag-input-wrap">
+                <input class="field-input" id="lc-ckw-input" placeholder="Kulcsszó + Enter" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addKw('lc-ckws','lc-ckw-input');}">
+                <button class="btn btn-sm" onclick="addKw('lc-ckws','lc-ckw-input')">+</button>
+              </div>
+              <div class="tag-list" id="lc-ckws"></div>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row" style="justify-content:flex-start;">
+          <button class="btn" onclick="addPairToNew()">＋ Pár hozzáadása</button>
+        </div>
+        <div id="new-pairs-list" class="card-list" style="margin-top:1.2rem;"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="saveNewSet()">💾 Szett mentése</button>
+        <button class="btn-ghost" onclick="clearNewSetForm()">Törlés</button>
+      </div>
+      <div id="new-set-msg" class="hidden alert" style="text-align:center;margin-top:.8rem;"></div>
+    </div>
+
+    <!-- IMPORT -->
+    <div id="tab-import" class="tab-content">
+      <div class="panel">
+        <div class="panel-title">📋 Szövegformátum</div>
+        <p style="font-size:.82rem;color:rgba(245,239,224,.45);margin-bottom:1rem;">Az alábbi formátumban add meg a szett adatait:</p>
+        <pre style="background:rgba(0,0,0,.25);border:1px solid rgba(201,147,58,.18);border-radius:8px;padding:1rem;font-size:.76rem;color:#e8b86d;line-height:1.8;overflow-x:auto;white-space:pre-wrap;">SZETT: Szett neve
+LEÍRÁS: Rövid leírás (opcionális)
+
+PAAR:
+NÉV: Személynév
+JELENSÉG: Jelenség neve
+KORSZAK: korszak neve
+ÉVSZÁM: 1450
+ALSÓ KULCSSZAVAK: szó1, szó2, szó3
+FELSŐ KULCSSZAVAK: szó1, szó2, szó3, szó4
+
+PAAR:
+NÉV: Másik személy
+...</pre>
+        <p style="font-size:.76rem;color:rgba(245,239,224,.3);margin-top:.8rem;">⚠ Legalább 2 PAAR blokk, min. 2-2 kulcsszó szükséges.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-title">✏️ Szöveg beillesztése</div>
+        <div class="field-group">
+          <label class="field-label">Másold be vagy írd be a szett szövegét</label>
+          <textarea class="field-textarea" id="import-textarea" rows="14" placeholder="SZETT: ..." style="min-height:260px;font-family:monospace;font-size:.82rem;"></textarea>
+        </div>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:.5rem;">
+          <button class="btn" onclick="importFromText()">✓ Importálás szövegből</button>
+          <button class="btn-ghost" onclick="document.getElementById('import-textarea').value=''">Törlés</button>
+        </div>
+        <div id="import-text-msg" class="hidden alert" style="margin-top:.8rem;"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">📂 .txt fájl feltöltése</div>
+        <p style="font-size:.82rem;color:rgba(245,239,224,.45);margin-bottom:1rem;">Notepadban elkészített .txt fájl betöltése.</p>
+        <input type="file" id="import-txt-file" accept=".txt,text/plain" style="display:none" onchange="importFromFile(this)">
+        <button class="btn-ghost" onclick="document.getElementById('import-txt-file').click()">📂 .txt fájl választása</button>
+        <div id="import-file-msg" class="hidden alert" style="margin-top:.8rem;"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">📤 Szett exportálása .txt-be</div>
+        <div class="field-group">
+          <label class="field-label">Szett kiválasztása</label>
+          <select class="field-input" id="export-select" style="cursor:pointer;">
+            <option value="">— válassz szettet —</option>
+          </select>
+        </div>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:.5rem;">
+          <button class="btn-ghost" onclick="exportAsText()">⬇ Letöltés .txt fájlként</button>
+        </div>
+        <div id="export-msg" class="hidden alert" style="margin-top:.8rem;"></div>
+      </div>
+    </div>
+
+    <!-- PASSWORD -->
+    <div id="tab-password" class="tab-content">
+      <div class="panel" style="max-width:400px;">
+        <div class="panel-title">🔑 Admin jelszó módosítása</div>
+        <div class="field-group">
+          <label class="field-label">Jelenlegi jelszó</label>
+          <input class="field-input" type="password" id="pw-current">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Új jelszó</label>
+          <input class="field-input" type="password" id="pw-new">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Új jelszó megerősítése</label>
+          <input class="field-input" type="password" id="pw-confirm">
+        </div>
+        <div id="pw-msg" class="hidden alert" style="margin-bottom:.8rem;"></div>
+        <button class="btn" onclick="changePassword()">Jelszó módosítása</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="hdr">
+    <div class="hdr-sub" id="game-set-name">✦ Kártyaszett ✦</div>
+    <h1>Kártyapárosító</h1>
+    <div class="hdr-line"></div>
+  </div>
+  <div style="max-width:980px;margin:0 auto;">
+    <button class="back-link" onclick="showScreen('screen-home');loadSetsFromFirebase()">← Vissza</button>
+  </div>
+  <div class="phases" id="game-phases">
+    <div class="ph active" id="gph1"><span class="phn">1</span>Párosítás</div>
+    <div class="ph upcoming" id="gph2"><span class="phn">2</span>Kitöltés</div>
+    <div class="ph upcoming" id="gph3"><span class="phn">3</span>Kulcsszó</div>
+  </div>
+  <div id="gphase1">
+    <div class="instr" id="g-instr1"><strong>Húzd</strong> a névkártyákat a megfelelő jelenségkártyára, vagy <strong>kattints</strong> a párosításhoz.</div>
+    <div class="prog-wrap">
+      <div class="prog-lbl"><span>Párosítás</span><span id="g-prog-txt">0 / 0</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="g-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="grid-p1">
+      <div><div class="col-lbl">— Személyek —</div><div class="cards-col" id="g-small-col"></div></div>
+      <div><div class="col-lbl">— Jelenségek —</div><div class="cards-col" id="g-large-col"></div></div>
+    </div>
+    <div class="btn-wrap">
+      <button class="btn" id="g-proceed1" disabled onclick="goGamePhase2()">Tovább</button>
+    </div>
+  </div>
+  <div id="gphase2" class="hidden">
+    <div class="instr">Töltsd ki a <strong>korszak nevét</strong>, az <strong>évszámot</strong>, és írj <strong>magyarázatot</strong> a kulcsszavak segítségével!</div>
+    <div class="p2-layout" id="g-p2-layout"></div>
+    <div class="btn-wrap">
+      <button class="btn" onclick="goGamePhase3()">Tovább a 3. lépéshez →</button>
+      <div id="g-val2" class="hidden val-msg">Kérjük, töltsd ki az összes mezőt!</div>
+    </div>
+  </div>
+  <div id="gphase3" class="hidden">
+    <div class="instr">Válaszd ki minden jelenséghez a <strong>legmegfelelőbb kulcsszót</strong>!</div>
+    <div class="p3-layout" id="g-p3-layout"></div>
+    <div class="btn-wrap">
+      <button class="btn" onclick="goGameFinish()">Beküldés ✦</button>
+      <div id="g-val3" class="hidden val-msg">Kérjük, minden jelenséghez válassz egy kulcsszót!</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="screen-success" class="screen">
+  <div class="success">
+    <div class="s-icon">✦</div>
+    <h2 class="s-title">Kiválóan teljesítettél!</h2>
+    <p class="s-sub">Minden feladat elvégezve.</p>
+    <div class="s-summary" id="s-summary"></div>
+    <div class="btn-row" style="margin-top:2rem;">
+      <button class="btn" onclick="replaySet()">Újra ugyanez</button>
+      <button class="btn-ghost" onclick="showScreen('screen-home');loadSetsFromFirebase()">Vissza a főoldalra</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, getDoc, setDoc, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDnRoQYmqk0XPJss0R_lrEpjJZaPpqwRsA",
+  authDomain: "kartya-parosito.firebaseapp.com",
+  projectId: "kartya-parosito",
+  storageBucket: "kartya-parosito.firebasestorage.app",
+  messagingSenderId: "32690846069",
+  appId: "1:32690846069:web:409d021a604accdb603b3c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── expose DB helpers to global scope ──
+window._fb = {
+  async loadSets() {
+    const q = query(collection(db, 'sets'), orderBy('createdAt', 'asc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+  },
+  async saveSet(setObj) {
+    const ref = await addDoc(collection(db, 'sets'), setObj);
+    return ref.id;
+  },
+  async deleteSet(id) {
+    await deleteDoc(doc(db, 'sets', id));
+  },
+  async getConfig() {
+    const d = await getDoc(doc(db, 'config', 'admin'));
+    return d.exists() ? d.data() : { password: 'admin123' };
+  },
+  async saveConfig(data) {
+    await setDoc(doc(db, 'config', 'admin'), data);
+  }
+};
+
+// init app after Firebase ready
+window.appInit();
+</script>
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let cachedSets = [];   // [{_id, name, desc, pairs, createdAt}]
+let adminConfig = { password: 'admin123' };
+let gSet = null;
+let gSmallCards = [], gLargeCards = [];
+let gPairs = {}, gSelected = null, gDragged = null;
+let gFillData = {}, gChoices = {};
+let newPairs = [], currentKws = [], currentCKws = [];
+
+// ═══════════════════════════════════════
+// INIT (called after Firebase loads)
+// ═══════════════════════════════════════
+window.appInit = async function() {
+  await loadSetsFromFirebase();
+  try {
+    adminConfig = await window._fb.getConfig();
+  } catch(e) { /* use default */ }
+  hideLoading();
+};
+
+// ═══════════════════════════════════════
+// FIREBASE HELPERS
+// ═══════════════════════════════════════
+async function loadSetsFromFirebase() {
+  showLoading();
+  try {
+    cachedSets = await window._fb.loadSets();
+  } catch(e) {
+    cachedSets = [];
+    console.error('Firebase hiba:', e);
+  }
+  renderHome();
+  hideLoading();
+}
+
+function showLoading() { document.getElementById('loading-overlay').classList.remove('hidden'); }
+function hideLoading() { document.getElementById('loading-overlay').classList.add('hidden'); }
+
+// ═══════════════════════════════════════
+// SCREENS
+// ═══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════
+function renderHome() {
+  const el = document.getElementById('home-sets-list');
+  if (!cachedSets.length) {
+    el.innerHTML = '<div class="empty-sets">Még nincs elérhető kártyaszett.<br>Az admin felületen adhatsz hozzá újakat.</div>';
+    return;
+  }
+  el.innerHTML = cachedSets.map((s, i) => `
+    <div class="set-item" onclick="startGame(${i})">
+      <div class="set-item-info">
+        <div class="set-item-name">${esc(s.name)}</div>
+        <div class="set-item-meta">${s.pairs.length} kártyapár${s.desc ? ' · ' + esc(s.desc) : ''}</div>
+      </div>
+      <div class="set-item-arrow">▶</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════
+function doLogin() {
+  const pw = document.getElementById('admin-pw').value;
+  if (pw === adminConfig.password) {
+    document.getElementById('login-err').classList.add('hidden');
+    document.getElementById('admin-pw').value = '';
+    showScreen('screen-admin');
+    renderAdmin();
+  } else {
+    document.getElementById('login-err').classList.remove('hidden');
+  }
+}
+
+// ═══════════════════════════════════════
+// ADMIN
+// ═══════════════════════════════════════
+function switchTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = ['tab-sets','tab-new','tab-import','tab-password'].indexOf(id);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  if (id === 'tab-import') renderExportSelect();
+}
+
+function renderAdmin() {
+  renderSetsManager();
+  renderExportSelect();
+}
+
+function renderSetsManager() {
+  const el = document.getElementById('sets-manager');
+  if (!cachedSets.length) {
+    el.innerHTML = '<div style="color:rgba(245,239,224,.35);font-style:italic;font-size:.85rem;">Még nincs szett.</div>';
+    return;
+  }
+  el.innerHTML = cachedSets.map((s, i) => `
+    <div class="set-entry">
+      <div class="set-entry-header" onclick="toggleSetEntry(${i})">
+        <div>
+          <div class="set-entry-title">${esc(s.name)} <span class="badge">${s.pairs.length} pár</span></div>
+          ${s.desc ? `<div class="set-entry-meta">${esc(s.desc)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <button class="btn-danger" onclick="event.stopPropagation();deleteSet('${s._id}',${i})">Törlés</button>
+          <span style="color:#c9933a;">▾</span>
+        </div>
+      </div>
+      <div class="set-entry-body" id="set-body-${i}">
+        ${s.pairs.map(p => `
+          <div class="pair-preview">
+            <div class="pair-preview-name">👤 ${esc(p.name)}</div>
+            <div class="pair-preview-phen">📌 ${esc(p.phenomenon)}</div>
+            <div style="font-size:.72rem;color:rgba(245,239,224,.4);">
+              Korszak: ${p.eraHint||'—'} · Év: ${p.yearHint||'—'}<br>
+              Alsó KSz: ${p.keywords.join(', ')}<br>
+              Felső KSz: ${p.choiceKeywords.join(', ')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleSetEntry(i) {
+  document.getElementById('set-body-' + i).classList.toggle('open');
+}
+
+async function deleteSet(fbId, localIdx) {
+  if (!confirm('Biztosan törlöd ezt a szettet?')) return;
+  showLoading();
+  try {
+    await window._fb.deleteSet(fbId);
+    cachedSets.splice(localIdx, 1);
+    renderSetsManager();
+    renderExportSelect();
+    showAdminAlert('Szett törölve.', 'success');
+  } catch(e) {
+    showAdminAlert('Törlés sikertelen: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+// ── NEW SET FORM ──
+function addKw(listId, inputId) {
+  const inp = document.getElementById(inputId);
+  const val = inp.value.trim();
+  if (!val) return;
+  if (listId === 'lc-kws') currentKws.push(val);
+  else currentCKws.push(val);
+  inp.value = '';
+  renderKwList(listId, listId === 'lc-kws' ? currentKws : currentCKws);
+}
+
+function removeKw(listId, idx) {
+  if (listId === 'lc-kws') currentKws.splice(idx, 1);
+  else currentCKws.splice(idx, 1);
+  renderKwList(listId, listId === 'lc-kws' ? currentKws : currentCKws);
+}
+
+function renderKwList(listId, arr) {
+  document.getElementById(listId).innerHTML = arr.map((k, i) =>
+    `<span class="tag-pill">${esc(k)}<button onclick="removeKw('${listId}',${i})">×</button></span>`
+  ).join('');
+}
+
+function addPairToNew() {
+  const name = document.getElementById('nc-name').value.trim();
+  const phen = document.getElementById('lc-phenomenon').value.trim();
+  const eraHint = document.getElementById('nc-era-hint').value.trim();
+  const yearHint = document.getElementById('nc-year-hint').value.trim();
+  if (!name || !phen) { alert('A személynév és a jelenség neve kötelező!'); return; }
+  if (currentKws.length < 2) { alert('Legalább 2 alsó kulcsszó szükséges!'); return; }
+  if (currentCKws.length < 2) { alert('Legalább 2 felső kulcsszó szükséges!'); return; }
+  newPairs.push({ name, phenomenon: phen, eraHint, yearHint, keywords: [...currentKws], choiceKeywords: [...currentCKws] });
+  currentKws = []; currentCKws = [];
+  ['nc-name','lc-phenomenon','nc-era-hint','nc-year-hint'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('lc-kws').innerHTML = '';
+  document.getElementById('lc-ckws').innerHTML = '';
+  renderNewPairsList();
+}
+
+function renderNewPairsList() {
+  const el = document.getElementById('new-pairs-list');
+  el.innerHTML = newPairs.map((p, i) => `
+    <div class="card-entry">
+      <div class="card-entry-info">
+        <div class="card-entry-name">👤 ${esc(p.name)} — 📌 ${esc(p.phenomenon)}</div>
+        <div class="card-entry-sub">Alsó: ${p.keywords.join(', ')} | Felső: ${p.choiceKeywords.join(', ')}</div>
+      </div>
+      <button class="btn-danger" onclick="removeNewPair(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function removeNewPair(i) { newPairs.splice(i, 1); renderNewPairsList(); }
+
+async function saveNewSet() {
+  const name = document.getElementById('new-set-name').value.trim();
+  const desc = document.getElementById('new-set-desc').value.trim();
+  const msgEl = document.getElementById('new-set-msg');
+  if (!name) { showMsg(msgEl, 'A szett neve kötelező!', 'error'); return; }
+  if (newPairs.length < 2) { showMsg(msgEl, 'Legalább 2 kártyapár szükséges!', 'error'); return; }
+  showLoading();
+  try {
+    const setObj = { name, desc, pairs: [...newPairs], createdAt: new Date().toISOString() };
+    const id = await window._fb.saveSet(setObj);
+    cachedSets.push({ _id: id, ...setObj });
+    clearNewSetForm();
+    renderSetsManager();
+    renderExportSelect();
+    showMsg(msgEl, '✓ Szett mentve a felhőbe!', 'success');
+  } catch(e) {
+    showMsg(msgEl, 'Mentés sikertelen: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+function clearNewSetForm() {
+  ['new-set-name','new-set-desc','nc-name','lc-phenomenon','nc-era-hint','nc-year-hint']
+    .forEach(id => document.getElementById(id).value = '');
+  currentKws = []; currentCKws = [];
+  document.getElementById('lc-kws').innerHTML = '';
+  document.getElementById('lc-ckws').innerHTML = '';
+  newPairs = [];
+  renderNewPairsList();
+}
+
+// ── TEXT IMPORT / EXPORT ──
+function parseSetText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const set = { name: '', desc: '', pairs: [], createdAt: new Date().toISOString() };
+  let currentPair = null;
+  for (const line of lines) {
+    const uLine = line.toUpperCase();
+    if (uLine.startsWith('SZETT:')) { set.name = line.slice(6).trim(); continue; }
+    if (uLine.startsWith('LEÍRÁS:') || uLine.startsWith('LEIRAS:')) {
+      set.desc = line.slice(line.indexOf(':')+1).trim(); continue;
+    }
+    if (uLine.startsWith('PAAR')) {
+      if (currentPair) set.pairs.push(currentPair);
+      currentPair = { name:'', phenomenon:'', eraHint:'', yearHint:'', keywords:[], choiceKeywords:[] };
+      continue;
+    }
+    if (!currentPair) continue;
+    const v = line.indexOf(':');
+    const val = v >= 0 ? line.slice(v+1).trim() : '';
+    if (uLine.startsWith('NÉV:') || uLine.startsWith('NEV:')) { currentPair.name = val; continue; }
+    if (uLine.startsWith('JELENSÉG:') || uLine.startsWith('JELENSEG:')) { currentPair.phenomenon = val; continue; }
+    if (uLine.startsWith('KORSZAK:')) { currentPair.eraHint = val; continue; }
+    if (uLine.startsWith('ÉVSZÁM:') || uLine.startsWith('EVSZAM:')) { currentPair.yearHint = val; continue; }
+    if (uLine.startsWith('ALSÓ KULCSSZAVAK:') || uLine.startsWith('ALSO KULCSSZAVAK:')) {
+      currentPair.keywords = val.split(',').map(k => k.trim()).filter(k => k); continue;
+    }
+    if (uLine.startsWith('FELSŐ KULCSSZAVAK:') || uLine.startsWith('FELSO KULCSSZAVAK:')) {
+      currentPair.choiceKeywords = val.split(',').map(k => k.trim()).filter(k => k); continue;
+    }
+  }
+  if (currentPair) set.pairs.push(currentPair);
+  return set;
+}
+
+function validateParsedSet(set) {
+  const errs = [];
+  if (!set.name) errs.push('Hiányzik a SZETT: sor.');
+  if (set.pairs.length < 2) errs.push('Legalább 2 PAAR blokk szükséges (jelenleg: ' + set.pairs.length + ').');
+  set.pairs.forEach((p, i) => {
+    if (!p.name) errs.push(`${i+1}. pár: hiányzik a NÉV.`);
+    if (!p.phenomenon) errs.push(`${i+1}. pár: hiányzik a JELENSÉG.`);
+    if (p.keywords.length < 2) errs.push(`${i+1}. pár: legalább 2 ALSÓ KULCSSZÓ szükséges.`);
+    if (p.choiceKeywords.length < 2) errs.push(`${i+1}. pár: legalább 2 FELSŐ KULCSSZÓ szükséges.`);
+  });
+  return errs;
+}
+
+async function doTextImport(text, msgElId) {
+  const msgEl = document.getElementById(msgElId);
+  if (!text.trim()) { showMsg(msgEl, 'A szövegmező üres!', 'error'); return; }
+  try {
+    const set = parseSetText(text);
+    const errs = validateParsedSet(set);
+    if (errs.length) { showMsg(msgEl, '⚠ Hibák: ' + errs.join(' | '), 'error'); return; }
+    showLoading();
+    const id = await window._fb.saveSet(set);
+    cachedSets.push({ _id: id, ...set });
+    renderSetsManager();
+    renderExportSelect();
+    showMsg(msgEl, `✓ Szett mentve: „${set.name}" (${set.pairs.length} pár)`, 'success');
+  } catch(e) {
+    showMsg(document.getElementById(msgElId), 'Hiba: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+function importFromText() {
+  doTextImport(document.getElementById('import-textarea').value, 'import-text-msg');
+}
+
+function importFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { doTextImport(e.target.result, 'import-file-msg'); };
+  reader.readAsText(file, 'UTF-8');
+  input.value = '';
+}
+
+function setToText(set) {
+  let out = `SZETT: ${set.name}\n`;
+  if (set.desc) out += `LEÍRÁS: ${set.desc}\n`;
+  set.pairs.forEach(p => {
+    out += `\nPAAR:\nNÉV: ${p.name}\nJELENSÉG: ${p.phenomenon}\n`;
+    if (p.eraHint) out += `KORSZAK: ${p.eraHint}\n`;
+    if (p.yearHint) out += `ÉVSZÁM: ${p.yearHint}\n`;
+    out += `ALSÓ KULCSSZAVAK: ${p.keywords.join(', ')}\nFELSŐ KULCSSZAVAK: ${p.choiceKeywords.join(', ')}\n`;
+  });
+  return out;
+}
+
+function renderExportSelect() {
+  const sel = document.getElementById('export-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— válassz szettet —</option>' +
+    cachedSets.map((s, i) => `<option value="${i}">${esc(s.name)}</option>`).join('');
+}
+
+function exportAsText() {
+  const idx = document.getElementById('export-select').value;
+  const msgEl = document.getElementById('export-msg');
+  if (idx === '') { showMsg(msgEl, 'Válassz ki egy szettet!', 'error'); return; }
+  const set = cachedSets[Number(idx)];
+  const blob = new Blob([setToText(set)], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (set.name.replace(/[^\w\s\-áéíóöőúüűÁÉÍÓÖŐÚÜŰ]/g,'').trim() || 'szett') + '.txt';
+  a.click();
+  showMsg(msgEl, '✓ Letöltés elindult.', 'success');
+}
+
+// ── PASSWORD ──
+async function changePassword() {
+  const cur = document.getElementById('pw-current').value;
+  const nw = document.getElementById('pw-new').value;
+  const conf = document.getElementById('pw-confirm').value;
+  const msgEl = document.getElementById('pw-msg');
+  if (cur !== adminConfig.password) { showMsg(msgEl, 'Hibás jelenlegi jelszó!', 'error'); return; }
+  if (nw.length < 4) { showMsg(msgEl, 'Az új jelszó legalább 4 karakter legyen!', 'error'); return; }
+  if (nw !== conf) { showMsg(msgEl, 'A két jelszó nem egyezik!', 'error'); return; }
+  showLoading();
+  try {
+    adminConfig.password = nw;
+    await window._fb.saveConfig(adminConfig);
+    showMsg(msgEl, '✓ Jelszó megváltoztatva!', 'success');
+    ['pw-current','pw-new','pw-confirm'].forEach(id => document.getElementById(id).value = '');
+  } catch(e) {
+    showMsg(msgEl, 'Mentés sikertelen: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+function showAdminAlert(msg, type) {
+  const el = document.getElementById('admin-alert');
+  el.className = 'alert alert-' + (type === 'success' ? 'success' : 'error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 3500);
+}
+
+// ═══════════════════════════════════════
+// GAME
+// ═══════════════════════════════════════
+function shuffle(a) {
+  const b = [...a];
+  for (let i = b.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [b[i], b[j]] = [b[j], b[i]];
+  }
+  return b;
+}
+
+function startGame(setIdx) {
+  gSet = cachedSets[setIdx];
+  gPairs = {}; gSelected = null; gDragged = null; gFillData = {}; gChoices = {};
+  gSmallCards = shuffle(gSet.pairs.map((p, i) => ({ ...p, idx: i })));
+  gLargeCards = shuffle(gSet.pairs.map((p, i) => ({ ...p, idx: i })));
+  gSet.pairs.forEach((_, i) => { gFillData[i] = { era: '', year: '', explanation: '' }; });
+  document.getElementById('game-set-name').textContent = '✦ ' + gSet.name + ' ✦';
+  ['gph1','gph2','gph3'].forEach((id, n) => {
+    const el = document.getElementById(id);
+    el.className = 'ph ' + (n === 0 ? 'active' : 'upcoming');
+    el.innerHTML = `<span class="phn">${n+1}</span>${['Párosítás','Kitöltés','Kulcsszó'][n]}`;
+  });
+  document.getElementById('gphase1').classList.remove('hidden');
+  document.getElementById('gphase2').classList.add('hidden');
+  document.getElementById('gphase3').classList.add('hidden');
+  showScreen('screen-game');
+  renderGamePhase1();
+}
+
+function replaySet() {
+  const idx = cachedSets.findIndex(s => s._id === gSet._id);
+  if (idx >= 0) startGame(idx);
+  else showScreen('screen-home');
+}
+
+function renderGamePhase1() {
+  const total = gSet.pairs.length;
+  const matched = Object.keys(gPairs).length;
+  const sc = document.getElementById('g-small-col');
+  sc.innerHTML = '';
+  gSmallCards.forEach(c => {
+    const isMatched = Object.values(gPairs).includes(c.idx);
+    const isSel = gSelected === c.idx;
+    const div = document.createElement('div');
+    div.className = 'sm-card' + (isMatched ? ' matched' : '') + (isSel ? ' selected' : '');
+    div.draggable = !isMatched;
+    div.innerHTML = `<div class="sm-name">${esc(c.name)}</div><div class="sm-div"></div><div class="sm-hint">${isMatched ? '✓ párosítva' : isSel ? '▸ válassz jelenséget' : 'húzd vagy kattints'}</div>`;
+    if (!isMatched) {
+      div.addEventListener('click', () => g1SelectSmall(c.idx));
+      div.addEventListener('dragstart', e => { gDragged = c.idx; e.dataTransfer.effectAllowed = 'move'; div.classList.add('dragging'); });
+      div.addEventListener('dragend', () => { gDragged = null; div.classList.remove('dragging'); renderGamePhase1(); });
+    }
+    sc.appendChild(div);
+  });
+  const lc = document.getElementById('g-large-col');
+  lc.innerHTML = '';
+  gLargeCards.forEach(c => {
+    const isMatched = gPairs[c.idx] !== undefined;
+    const pairedName = isMatched ? gSet.pairs[gPairs[c.idx]].name : null;
+    const div = document.createElement('div');
+    div.className = 'lg-card' + (isMatched ? ' matched' : '');
+    div.innerHTML = `
+      <div class="lg-phen">${esc(c.phenomenon)}</div>
+      ${isMatched ? `<div class="lg-badge">✦ ${esc(pairedName)}</div>` : `<div class="lg-hint">ide húzd a névkártyát</div>`}
+      <div class="kw-strip">${c.keywords.map(k => `<span class="kw-tag">${esc(k)}</span>`).join('')}</div>
+    `;
+    if (!isMatched) {
+      div.addEventListener('click', () => g1ClickLarge(c.idx));
+      div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drop-hover'); });
+      div.addEventListener('dragleave', () => div.classList.remove('drop-hover'));
+      div.addEventListener('drop', e => { e.preventDefault(); div.classList.remove('drop-hover'); if (gDragged !== null) g1DoPair(c.idx, gDragged); });
+    }
+    lc.appendChild(div);
+  });
+  document.getElementById('g-prog-txt').textContent = matched + ' / ' + total;
+  document.getElementById('g-prog-fill').style.width = (matched / total * 100) + '%';
+  const btn = document.getElementById('g-proceed1');
+  btn.disabled = matched !== total;
+  btn.textContent = matched === total ? 'Tovább a kitöltéshez →' : 'Még ' + (total - matched) + ' kártya párosítandó';
+  document.getElementById('g-instr1').innerHTML = gSelected !== null
+    ? '<strong>Kattints egy jelenségkártyára</strong> a kiválasztott névkártya párosításához.'
+    : '<strong>Húzd</strong> a névkártyákat a megfelelő jelenségkártyára, vagy <strong>kattints</strong> a párosításhoz.';
+}
+
+function g1SelectSmall(idx) {
+  if (Object.values(gPairs).includes(idx)) return;
+  gSelected = gSelected === idx ? null : idx;
+  renderGamePhase1();
+}
+function g1ClickLarge(idx) {
+  if (gPairs[idx] !== undefined) return;
+  if (gSelected !== null) g1DoPair(idx, gSelected);
+}
+function g1DoPair(largeIdx, smallIdx) {
+  if (gPairs[largeIdx] !== undefined || Object.values(gPairs).includes(smallIdx)) return;
+  gPairs[largeIdx] = smallIdx;
+  gSelected = null; gDragged = null;
+  renderGamePhase1();
+}
+
+function goGamePhase2() {
+  document.getElementById('gphase1').classList.add('hidden');
+  setPhaseState('gph1', 'done', '✓', 'Párosítás');
+  setPhaseState('gph2', 'active', '2', 'Kitöltés');
+  document.getElementById('gphase2').classList.remove('hidden');
+  const layout = document.getElementById('g-p2-layout');
+  layout.innerHTML = '';
+  Object.entries(gPairs).forEach(([lidStr, sid]) => {
+    const lid = Number(lidStr);
+    const lp = gSet.pairs[lid], sp = gSet.pairs[sid];
+    const div = document.createElement('div');
+    div.className = 'pair-block';
+    div.innerHTML = `
+      <div class="p2-sm">
+        <div class="p2-name">${esc(sp.name)}</div>
+        <div class="p2-div"></div>
+        <label class="lbl-dark">Korszak neve</label>
+        <input class="inp-dark" id="era-${sid}" type="text" placeholder="${sp.eraHint || 'pl. reneszánsz…'}">
+        <label class="lbl-dark">Évszám</label>
+        <input class="inp-dark" id="year-${sid}" type="number" placeholder="${sp.yearHint || 'pl. 1450'}">
+      </div>
+      <div class="p2-lg">
+        <div class="p2-phen-lbl">✦ Jelenség</div>
+        <div class="p2-phen">${esc(lp.phenomenon)}</div>
+        <label class="lbl-dark">Magyarázat a kulcsszavak felhasználásával</label>
+        <textarea class="ta-dark" id="exp-${sid}" rows="4" placeholder="Írd le saját szavaiddal…"></textarea>
+        <div class="kw-strip">${lp.keywords.map(k => `<span class="kw-tag">${esc(k)}</span>`).join('')}</div>
+      </div>
+    `;
+    layout.appendChild(div);
+  });
+}
+
+function goGamePhase3() {
+  let valid = true;
+  Object.entries(gPairs).forEach(([_, sid]) => {
+    ['era','year','exp'].forEach(f => {
+      const el = document.getElementById(f + '-' + sid);
+      if (el && !el.value.trim()) { el.classList.add('err'); valid = false; }
+      else if (el) el.classList.remove('err');
+    });
+    gFillData[sid] = {
+      era: document.getElementById('era-'+sid)?.value || '',
+      year: document.getElementById('year-'+sid)?.value || '',
+      explanation: document.getElementById('exp-'+sid)?.value || ''
+    };
+  });
+  if (!valid) { document.getElementById('g-val2').classList.remove('hidden'); return; }
+  document.getElementById('g-val2').classList.add('hidden');
+  document.getElementById('gphase2').classList.add('hidden');
+  setPhaseState('gph2', 'done', '✓', 'Kitöltés');
+  setPhaseState('gph3', 'active', '3', 'Kulcsszó');
+  document.getElementById('gphase3').classList.remove('hidden');
+  const layout = document.getElementById('g-p3-layout');
+  layout.innerHTML = '';
+  Object.entries(gPairs).forEach(([largeIdx, smallIdx]) => {
+    const li = Number(largeIdx), si = smallIdx;
+    const lp = gSet.pairs[li], sp = gSet.pairs[si];
+    const div = document.createElement('div');
+    div.className = 'p3-block';
+    div.innerHTML = `
+      <div class="p3-phen">${esc(lp.phenomenon)}</div>
+      <div class="p3-paired">Párosított személy: ${esc(sp.name)}</div>
+      <div style="font-size:.78rem;color:rgba(245,239,224,.45);margin-bottom:.4rem;">Válaszd ki a legmegfelelőbb kulcsszót:</div>
+      <div class="p3-choices" id="choices-${li}">
+        ${shuffle(lp.choiceKeywords).map(kw =>
+          `<button class="choice-btn" onclick="selectChoice(${li},'${kw.replace(/'/g,"\\'")}',this)">${esc(kw)}</button>`
+        ).join('')}
+      </div>
+      <div class="p3-chosen-label" id="chosen-lbl-${li}"></div>
+    `;
+    layout.appendChild(div);
+  });
+}
+
+function selectChoice(largeIdx, kw, btn) {
+  gChoices[largeIdx] = kw;
+  document.getElementById('choices-' + largeIdx).querySelectorAll('.choice-btn').forEach(b => b.classList.remove('chosen'));
+  btn.classList.add('chosen');
+  document.getElementById('chosen-lbl-' + largeIdx).textContent = 'Kiválasztva: ' + kw;
+}
+
+function goGameFinish() {
+  const largeIdxs = Object.keys(gPairs).map(Number);
+  if (!largeIdxs.every(li => gChoices[li])) { document.getElementById('g-val3').classList.remove('hidden'); return; }
+  document.getElementById('g-val3').classList.add('hidden');
+  const sum = document.getElementById('s-summary');
+  sum.innerHTML = '';
+  largeIdxs.forEach(li => {
+    const si = gPairs[li];
+    const lp = gSet.pairs[li], sp = gSet.pairs[si];
+    const fd = gFillData[si] || {};
+    const div = document.createElement('div');
+    div.className = 's-card';
+    div.innerHTML = `
+      <div class="s-cname">${esc(sp.name)}</div>
+      <div class="s-cera">⊛ ${esc(fd.era)}</div>
+      <div class="s-cyear">◇ ${esc(fd.year)}</div>
+      <div style="font-size:.72rem;color:rgba(245,239,224,.5);margin-top:.35rem;">📌 ${esc(lp.phenomenon)}</div>
+      <div class="s-ckw">✦ ${esc(gChoices[li])}</div>
+    `;
+    sum.appendChild(div);
+  });
+  showScreen('screen-success');
+}
+
+function setPhaseState(id, cls, num, label) {
+  const el = document.getElementById(id);
+  el.className = 'ph ' + cls;
+  el.innerHTML = `<span class="phn">${num}</span>${label}`;
+}
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showMsg(el, msg, type) {
+  el.classList.remove('hidden');
+  el.className = 'alert alert-' + (type === 'success' ? 'success' : 'error');
+  el.textContent = msg;
+}
+</script>
+</body>
+</html>
